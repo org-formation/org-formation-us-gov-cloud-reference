@@ -1,0 +1,46 @@
+Parameters:
+  <<: !Include "../../_parameters.yml"
+
+  catalogBucket:
+    Type: String
+    Default: community-resource-provider-catalog
+
+# Source code repository for the CloudFormation types: https://github.com/org-formation/aws-resource-providers
+
+NoDefaultVpcRp:
+  Type: register-type
+  ResourceType: "Community::Organizations::NoDefaultVPC"
+  SchemaHandlerPackage: !Sub "s3://${catalogBucket}/community-organizations-nodefaultvpc-0.1.0.zip"
+  MaxConcurrentTasks: 100
+  OrganizationBinding:
+    IncludeMasterAccount: true
+    Account: "*"
+    Region: !Ref allCommercialRegions
+
+OrganizationsPolicyRp:
+  Type: register-type
+  ResourceType: "Community::Organizations::Policy"
+  SchemaHandlerPackage: !Sub "s3://${catalogBucket}/community-organizations-policy-0.2.1.zip"
+  MaxConcurrentTasks: 100
+  OrganizationBinding:
+    IncludeMasterAccount: true
+    Region: us-east-1 # Only compatible to us-east-1 region
+
+PasswordPolicyRp:
+  Type: register-type
+  ResourceType: "Community::IAM::PasswordPolicy"
+  SchemaHandlerPackage: !Sub "s3://${catalogBucket}/community-iam-passwordpolicy-0.2.0.zip"
+  MaxConcurrentTasks: 10
+  OrganizationBinding:
+    IncludeMasterAccount: true
+    Account: "*"
+    Region: !Ref primaryCommercialRegion
+
+SsoAssignmentGroupRp:
+  Type: register-type
+  ResourceType: "Community::SSO::AssignmentGroup"
+  SchemaHandlerPackage: !Sub "s3://${catalogBucket}/community-sso-assignmentgroup-0.3.1.zip"
+  MaxConcurrentTasks: 10
+  OrganizationBinding:
+    IncludeMasterAccount: true
+    Region: !Ref primaryCommercialRegion

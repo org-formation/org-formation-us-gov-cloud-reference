@@ -1,0 +1,22 @@
+Parameters:
+  <<: !Include './_parameters.yml'
+
+CloudTrail:
+  Type: include
+  Path: ./govcloud-templates/060-cloud-trail/_tasks.yml
+
+GuardDuty:
+  Type: include
+  Path: ./govcloud-templates/070-guard-duty/_tasks.yml
+
+AwsConfigInventory:
+  Type: include
+  Path: ./templates/080-aws-config-inventory/_tasks.yml
+
+AwsConfigRules:
+  Type: include
+  Path: ./templates/090-aws-config-rules/_tasks.yml
+
+AwsSso:
+  Type: include
+  Path: ./govcloud-templates/100-aws-sso/_tasks.yml

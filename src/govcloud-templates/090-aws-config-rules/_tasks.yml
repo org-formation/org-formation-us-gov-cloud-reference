@@ -1,0 +1,21 @@
+Parameters:
+  <<: !Include '../../_parameters.yml'
+
+  appName:
+    Type: String
+    Default: 'config'
+
+# Deploys several aws managed organization config rule 
+ManagedOrganizationConfigRules:
+  Type: update-stacks
+  DependsOn: ConfigBase
+  Template: ./default-rules.yml
+  StackName: !Sub '${resourcePrefix}-${appName}-default-rules'
+  StackDescription: AWS Config - AWS managed organization config rules
+  TerminationProtection: false
+  Parameters:
+    MasterAccountId: !Ref MasterAccount
+  MaxConcurrentStacks: 32
+  DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+  DefaultOrganizationBinding:
+    Account: "*"

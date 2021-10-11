@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09-OC'
+Description: Default organization blueprint
+
+Organization:
+
+  ManagementAccount:
+    Type: OC::ORG::MasterAccount
+    Properties:
+      Alias: '{{organization-name}}-commercial-management'
+      RootEmail: '{{management-root-email-address}}'
+      AccountName: Management Account
+      AccountId: '{{management-account-id}}'
+      PartitionId: '{{govcloud-management-account-id}}'
+      PartitionAlias: '{{organization-name}}-govcloud-management'
+      Tags:
+        budget-alarm-threshold: 200
+        budget-alarm-threshold-email-recipient: me@{{email-domain}}
+
+  OrganizationRoot:
+    Type: OC::ORG::OrganizationRoot
+    Properties:
+      DefaultOrganizationAccessRoleName: OrganizationAccountAccessRole
+      DefaultBuildAccessRoleName: OrganizationFormationBuildAccessRole
+
+  SecurityAccount:
+    Type: OC::ORG::Account
+    Properties:
+      Alias: '{{organization-name}}-commercial-security'
+      AccountName: Security Account
+      RootEmail: '{{security-root-email-address}}'
+      PartitionAlias: '{{organization-name}}-govcloud-security'
+      Tags:
+        budget-alarm-threshold: 200
+        budget-alarm-threshold-email-recipient: security@{{email-domain}}
+
+  LogArchiveAccount:
+    Type: OC::ORG::Account
+    Properties:
+      Alias: '{{organization-name}}-commercial-log-archive'
+      AccountName: Log Archive Account
+      RootEmail: '{{log-archive-root-email-address}}'
+      PartitionAlias: '{{organization-name}}-govcloud-log-archive'
+      Tags:
+        budget-alarm-threshold: 200
+        budget-alarm-threshold-email-recipient: log-archive@{{email-domain}}

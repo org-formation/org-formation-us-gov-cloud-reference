@@ -1,0 +1,174 @@
+Parameters:
+  <<: !Include '../../_parameters.yml'
+
+  appName:
+    Type: String
+    Default: 'sso'
+
+  # AWS SSO instance ARN
+  instanceArn:
+    Type: String
+    Default: arn:aws-us-gov:sso:::instance/ssoins-79071a86f23d44ac # '{{govcloud-sso-instance-arn}}'
+
+  # Principal ID from Identity Provider's group used by administrators
+  adminGroup:
+    Type: String
+    Default: 98673e8adf-28a4a970-3ce5-413a-ac66-dd253e55b18a # '{{govcloud-sso-admin-group-id}}'
+
+  # Principal ID from Identity Provider's group used by auditors
+  auditorGroup:
+    Type: String
+    Default: 98673e8adf-758e53bb-ada5-42d4-9a56-b802a3e22b20 # '{{govcloud-sso-auditor-group-id}}'
+
+  # Principal ID from Identity Provider's group used by developers
+  developerGroup:
+    Type: String
+    Default: 98673e8adf-e24defb8-c62d-4a7a-a650-10e48acedaa2 # '{{govcloud-sso-developer-group-id}}'
+
+  # Principal ID from Identity Provider's group used by supporters
+  supporterGroup:
+    Type: String
+    Default: 98673e8adf-f8d3a2e7-1bb1-4a4f-bd42-0ccde337a48b # '{{govcloud-sso-supporter-group-id}}'
+
+SsoAdministrator:
+  Type: update-stacks
+  Template: ./aws-sso.yml
+  StackName: !Sub '${resourcePrefix}-${appName}-admin'
+  StackDescription: 'Full permission role used by Admin group within whole organization'
+  TerminationProtection: false
+  DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+  DefaultOrganizationBinding:
+    IncludeMasterAccount: true
+  OrganizationBindings:
+    TargetBinding:
+      Account: 
+        - 641007654218
+
+  Parameters:
+    instanceArn: !Ref instanceArn
+    principalId: !Ref adminGroup
+    permissionSetName: 'Administrator'
+    managedPolicies: [ 'arn:aws-us-gov:iam::aws:policy/AdministratorAccess' ]
+    sessionDuration: 'PT1H'
+    masterAccountId: 622462676601 # ManagementAccount
+
+# SsoAdministratorSupporter:
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-admin-supporter'
+#   StackDescription: 'Full permission role used by Supporter group within Production organizational units'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       OrganizationalUnit:
+#         - !Ref SharedOu
+#         - !Ref ProdOu
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref supporterGroup
+#     permissionSetArn: !CopyValue [ !Sub '${resourcePrefix}-${appName}-admin-permission-set-arn' ]
+
+# SsoWriter:
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-writer'
+#   StackDescription: 'Read and Write role used by Supporter group within Production organizational units'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       OrganizationalUnit:
+#         - !Ref SharedOu
+#         - !Ref ProdOu
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref supporterGroup
+#     permissionSetName: 'Writer'
+#     managedPolicies: [ 'arn:aws-us-gov:iam::aws:policy/PowerUserAccess' ]
+#     sessionDuration: 'PT1H'
+
+# SsoDeveloper:
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-developer'
+#   StackDescription: 'Read and Write role used by Developer group within SDLC organizational units'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       OrganizationalUnit:
+#         - !Ref SdlcOu
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref developerGroup
+#     permissionSetName: 'Developer'
+#     managedPolicies: [ 'arn:aws-us-gov:iam::aws:policy/PowerUserAccess' ]
+#     sessionDuration: 'PT12H'
+
+# SsoAuditor:
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-auditor'
+#   StackDescription: 'Audit role used by Auditor group within whole organization'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       Account: '*'
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref auditorGroup
+#     permissionSetName: 'Auditor'
+#     managedPolicies: [ 'arn:aws-us-gov:iam::aws:policy/SecurityAudit' ]
+#     sessionDuration: 'PT1H'
+
+# SsoViewer:
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-viewer'
+#   StackDescription: 'Read-only role used by Admin group within whole organization'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       OrganizationalUnit:
+#         - !Ref SharedOu
+#         - !Ref SdlcOu
+#         - !Ref ProdOu
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref adminGroup
+#     permissionSetName: 'Viewer'
+#     managedPolicies: [ 'arn:aws-us-gov:iam::aws:policy/job-function/ViewOnlyAccess' ]
+#     sessionDuration: 'PT12H'
+#     masterAccountId: !Ref MasterAccount # ManagementAccount
+
+# SsoViewerSupporter:
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-viewer-supporter'
+#   StackDescription: 'Read-only role used by Supporter group within Production organizational units'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       OrganizationalUnit:
+#         - !Ref SharedOu
+#         - !Ref ProdOu
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref supporterGroup
+#     permissionSetArn: !CopyValue [ !Sub '${resourcePrefix}-${appName}-viewer-permission-set-arn' ]

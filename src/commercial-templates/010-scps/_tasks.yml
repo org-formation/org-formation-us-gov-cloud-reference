@@ -1,0 +1,25 @@
+Parameters:
+  <<: !Include "../../_parameters.yml"
+
+SelfProtect:
+  Type: update-stacks
+  Template: ./self-protect.yml
+  StackName: !Sub "${resourcePrefix}-self-protect"
+  DefaultOrganizationBindingRegion: !Ref primaryCommercialRegion
+  DefaultOrganizationBinding:
+    IncludeMasterAccount: true
+  Parameters:
+    targetIds: [!Ref OrganizationRoot]
+
+# DenyRootAccess:
+#   Type: update-stacks
+#   Template: ./deny-root-access.yml
+#   StackName: !Sub "${resourcePrefix}-deny-root-access"
+#   DefaultOrganizationBindingRegion: !Ref primaryCommercialRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#     # you can use the following to exclude accounts from this SCP, either temporarily or permanently
+#     # ExcludeAccount: !Ref SecurityAccount
+#   OrganizationBindings:
+#     TargetBinding:
+#       Account: "*"

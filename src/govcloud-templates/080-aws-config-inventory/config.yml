@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+
+OrganizationBindings:
+  ConfigBucketBinding:
+  ConfigEnableBinding:
+
+
+Parameters:
+  resourcePrefix:
+    Type: String
+  bucketName:
+    Type: String
+    Description: 'Name of the central S3 bucket containing AWS Config audit findings'
+
+Resources:
+  ConfigAuditBucket:
+    Type: 'AWS::S3::Bucket'
+    OrganizationBinding: !Ref ConfigBucketBinding
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref bucketName
+      AccessControl: BucketOwnerFullControl
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: ArchiveAndDelete
+            Status: Enabled
+            ExpirationInDays: 2557
+
+  ConfigAuditBucketPolicy:
+    OrganizationBinding: !Ref ConfigBucketBinding
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ConfigAuditBucket
+      PolicyDocument: # Taken from https://docs.aws.amazon.com/config/latest/developerguide/s3-bucket-policy.html#granting-access-in-another-account
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AWSConfigBucketPermissionsCheck
+            Effect: Allow
+            Principal:
+              Service:
+                - config.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource: !GetAtt ConfigAuditBucket.Arn
+          - Sid: AWSConfigBucketExistenceCheck
+            Effect: Allow
+            Principal:
+              Service:
+                - config.amazonaws.com
+            Action: s3:ListBucket
+            Resource: !GetAtt ConfigAuditBucket.Arn
+          - Sid: AWSConfigBucketDelivery
+            Effect: Allow
+            Principal:
+              Service:
+                - config.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub '${ConfigAuditBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                's3:x-amz-acl': 'bucket-owner-full-control'
+
+  ConfigurationRecorder:
+    OrganizationBinding: !Ref ConfigEnableBinding
+    Type: 'AWS::Config::ConfigurationRecorder'
+    Properties:
+      Name: !Sub ${resourcePrefix}-config-recorder
+      RecordingGroup:
+        AllSupported: true
+        IncludeGlobalResourceTypes: true
+      RoleARN: !GetAtt ConfigurationRecorderRole.Arn
+
+  DeliveryChannel:
+    OrganizationBinding: !Ref ConfigEnableBinding
+    Type: 'AWS::Config::DeliveryChannel'
+    Properties:
+      Name: !Sub ${resourcePrefix}-config-delivery-channel
+      S3BucketName: !Ref ConfigAuditBucket
+      ConfigSnapshotDeliveryProperties:
+        DeliveryFrequency: TwentyFour_Hours
+
+  ConfigurationRecorderRole:
+    OrganizationBinding: !Ref ConfigEnableBinding
+    Type: 'AWS::IAM::Role'
+    Properties:
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AssumeRole1
+            Effect: Allow
+            Principal:
+              Service: 'config.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 's3-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action: 's3:PutObject'
+              Resource: !Sub '${ConfigAuditBucket.Arn}/*'
+              Condition:
+                StringLike:
+                  's3:x-amz-acl': 'bucket-owner-full-control'
+            - Effect: Allow
+              Action: 's3:GetBucketAcl'
+              Resource: !GetAtt ConfigAuditBucket.Arn

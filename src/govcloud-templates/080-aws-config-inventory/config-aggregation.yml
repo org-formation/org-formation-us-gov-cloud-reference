@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+
+OrganizationBindings:
+  ConfigEnableBinding:
+  ConfigEnableBindingPrimary:
+  ConfigAdminBinding:
+
+
+Parameters:
+  aggregatorName:
+    Type: String
+  primaryGovCloudRegion:
+    Type: String
+  allGovCloudRegions:
+    Type: CommaDelimitedList
+
+Resources:
+  ConfigServiceLinkedRole:
+    Type: AWS::IAM::ServiceLinkedRole
+    OrganizationBinding: !Ref ConfigEnableBindingPrimary
+    Properties:
+      AWSServiceName: config.amazonaws.com
+      Description: Service-Linked-Role for AWS Config
+
+  ConfigAggregationAuthorization:
+    Type: AWS::Config::AggregationAuthorization
+    OrganizationBinding: !Ref ConfigEnableBinding
+    Properties:
+      AuthorizedAccountId: Fn::EnumTargetAccounts ConfigAdminBinding '${account}'
+      AuthorizedAwsRegion: !Ref primaryGovCloudRegion
+
+  ConfigAggregator:
+    Type: AWS::Config::ConfigurationAggregator
+    OrganizationBinding: !Ref ConfigAdminBinding
+    Properties:
+      AccountAggregationSources:
+        - AccountIds: Fn::EnumTargetAccounts ConfigEnableBindingPrimary '${account}'
+          AwsRegions: !Ref allGovCloudRegions
+          AllAwsRegions: False

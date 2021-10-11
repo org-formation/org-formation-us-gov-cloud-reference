@@ -1,0 +1,25 @@
+Parameters:
+  <<: !Include './_parameters.yml'
+
+Types:
+  Type: include
+  Path: ./commercial-templates/005-types/_tasks.yml
+
+ServiceControlPolicies:
+  Type: include
+  DependsOn: [ Types ]
+  Path: ./commercial-templates/010-scps/_tasks.yml
+
+SecureDefaults:
+  Type: include
+  DependsOn: [ Types ]
+  Path: ./commercial-templates/020-secure-defaults/_tasks.yml
+
+Budgets:
+  Type: include
+  Path: ./commercial-templates/040-budgets/_tasks.yml
+
+AwsSso:
+  Type: include
+  DependsOn: [ Types, ServiceControlPolicies ]
+  Path: ./commercial-templates/100-aws-sso/_tasks.yml

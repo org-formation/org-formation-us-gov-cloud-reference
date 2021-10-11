@@ -1,0 +1,11 @@
+the following template keys must be replaced
+
+* {{organization-name}}
+* {{management-root-email-address}}
+* {{management-account-id}}
+* {{govcloud-management-account-id}}
+* {{primary-commercial-aws-region}}
+* {{primary-govcloud-aws-region}}
+
+* {{security-root-email-address}}
+* {{log-archive-root-email-address}}

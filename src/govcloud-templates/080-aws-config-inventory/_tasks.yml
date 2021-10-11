@@ -1,0 +1,53 @@
+Parameters:
+  <<: !Include '../../_parameters.yml'
+
+  appName:
+    Type: String
+    Default: 'config'
+
+# Enable AWS Config in all member accounts and send Findings and Config history to the centralized s3 bucket in the archive account
+ConfigBase:
+  Type: update-stacks
+  Template: ./config.yml
+  StackName: !Sub '${resourcePrefix}-${appName}-base'
+  StackDescription: AWS Config - Base
+  TerminationProtection: false
+  MaxConcurrentStacks: 32
+  DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+  OrganizationBindings:
+    ConfigEnableBinding:
+      Account: '*'
+      IncludeMasterAccount: true
+      Region: !Ref allGovCloudRegions
+    ConfigBucketBinding:
+      Account: !Ref LogArchiveAccount
+  Parameters:
+    resourcePrefix: !Ref resourcePrefix
+    bucketName: !Sub '${resourcePrefix}-${appName}-${CurrentAccount.AccountId}'
+
+# Enables aggregation of AWS Config findings in the 'config-admin' account(s) 
+ConfigAggregation:
+  Type: update-stacks
+  DependsOn: ConfigBase
+  Template: ./config-aggregation.yml
+  StackName: !Sub '${resourcePrefix}-${appName}-aggregation'
+  StackDescription: AWS Config - Aggregation
+  TerminationProtection: false
+  Parameters:
+    aggregatorName: !Sub '${resourcePrefix}-${appName}-aggregator'
+    primaryGovCloudRegion: !Ref primaryGovCloudRegion
+    allGovCloudRegions: !Ref allGovCloudRegions
+  MaxConcurrentStacks: 32
+  DefaultOrganizationBindingRegion: !Ref primaryGovCloudRegion
+  OrganizationBindings:
+    ConfigEnableBinding:
+      Account: '*'
+      IncludeMasterAccount: true
+      Region: !Ref allGovCloudRegions
+    ConfigEnableBindingPrimary:
+      Account: '*'
+      IncludeMasterAccount: true
+      Region:
+        - !Ref primaryGovCloudRegion
+    ConfigAdminBinding:
+      Account: !Ref SecurityAccount

@@ -1,0 +1,37 @@
+Parameters:
+  <<: !Include '../../_parameters.yml'
+
+PasswordPolicy:
+  Type: update-stacks
+  Template: ./password-policy.yml
+  StackName: !Sub '${resourcePrefix}-password-policy'
+  MaxConcurrentStacks: 10
+  Parameters:
+    minimumPasswordLength: 24
+  DefaultOrganizationBinding:
+    IncludeMasterAccount: true
+    Account: '*'
+    Region: !Ref primaryCommercialRegion
+
+NoDefaultVpc:
+  Type: update-stacks
+  Template: ./no-default-vpc.yml
+  StackName: !Sub '${resourcePrefix}-no-default-vpc'
+  MaxConcurrentStacks: 10
+  FailedStackTolerance: 100
+  DefaultOrganizationBinding:
+    IncludeMasterAccount: true
+    Account: '*'
+    Region: !Ref allCommercialRegions
+
+OrganizationPolicies:
+  Type: update-stacks
+  Template: ./organization-policies.yml
+  StackName: !Sub '${resourcePrefix}-organization-policies'
+  StackDescription: Ensures AWS Organizations is configured with secure policies by default
+  MaxConcurrentStacks: 10
+  Parameters:
+    targetIds: [ !Ref OrganizationRoot ]
+  DefaultOrganizationBinding:
+    IncludeMasterAccount: true
+    Region: !Ref primaryCommercialRegion

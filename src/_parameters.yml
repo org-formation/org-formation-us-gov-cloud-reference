@@ -1,0 +1,29 @@
+# if you use this resource prefix in all stacks deployed by this project they are easily identifiable
+resourcePrefix:
+  Type: String
+  Default: '{{organization-name}}'
+
+primaryCommercialRegion:
+  Type: String
+  Default: '{{primary-commercial-aws-region}}'
+
+primaryGovCloudRegion:
+  Type: String
+  Default: '{{primary-govcloud-aws-region}}'
+
+organizationPrincipalId:
+  Type: String
+  Default: !Ref ORG::PrincipalOrgID
+
+# sometimes you will need to deploy a task to all regions you allow. you can use this parameter to keep that list in 1 place
+allCommercialRegions:
+  Type: List<String>
+  Default:
+    - us-east-1
+    - us-west-1
+
+allGovCloudRegions:
+  Type: List<String>
+  Default:
+    - us-gov-west-1 
+    - us-gov-east-1 
