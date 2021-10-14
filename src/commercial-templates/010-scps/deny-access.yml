@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: "2010-09-09-OC"
+Description: Set of deny SCPs that locks down the commercial partition.
+
+Parameters:
+  targetIds:
+    Type: CommaDelimitedList
+
+Resources:
+  RestrictRootAccessScp:
+    Type: Community::Organizations::Policy
+    Properties:
+      Description: Restricts the use of the Root account
+      Name: DenyRootAccess
+      PolicyType: SERVICE_CONTROL_POLICY
+      TargetIds:
+        - Fn::EnumTargetAccounts TargetBinding ${account}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyRootUser
+            Effect: Deny
+            Action: "*"
+            Resource: "*"
+            Condition:
+              StringLike:
+                "aws:PrincipalArn": "arn:aws:iam::*:root"
+
+  # RestrictCommercialPartitionScp:
+  #   DependsOn: RestrictRootAccessScp
+  #   Type: Community::Organizations::Policy
+  #   Properties:
+  #     Description: Restrict commercial partition access besides for select services
+  #     Name: RestrictCommercialAccess
+  #     PolicyType: SERVICE_CONTROL_POLICY
+  #     TargetIds: !Ref targetIds
+  #     # TargetIds:
+  #     #   - Fn::EnumTargetAccounts TargetBinding ${account}
+  #     PolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Sid: DenyCommercialAccess
+  #           Effect: Deny
+  #           NotAction:
+  #             - "acm:*"
+  #             - "budgets:*"
+  #             - "iam:*"
+  #             - "sts:*"
+  #             - "route53:*"
+  #             - "route53domains:*"
+  #             - "route53resolver:*"
+  #             - "organizations:*"
+  #             - "support:*"
+  #             - "cloudformation:*"
+  #           Resource: "*"
+  #           Condition:
+  #             ArnNotLike:
+  #               "aws:PrincipalARN":
+  #                 - arn:aws:iam::*:role/OrganizationFormationBuildAccessRole
+  #                 - arn:aws:iam::*:role/OrganizationAccountAccessRole

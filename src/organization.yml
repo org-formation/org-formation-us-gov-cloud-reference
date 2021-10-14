@@ -10,7 +10,7 @@ Organization:
       RootEmail: '{{management-root-email-address}}'
       AccountName: Management Account
       AccountId: '{{management-account-id}}'
-      PartitionId: '{{govcloud-management-account-id}}'
+      PartitionAccountId: '{{govcloud-management-account-id}}'
       PartitionAlias: '{{organization-name}}-govcloud-management'
       Tags:
         budget-alarm-threshold: 200
@@ -20,7 +20,7 @@ Organization:
     Type: OC::ORG::OrganizationRoot
     Properties:
       DefaultOrganizationAccessRoleName: OrganizationAccountAccessRole
-      DefaultBuildAccessRoleName: OrganizationFormationBuildAccessRole
+      MirrorInPartition: true
 
   SecurityAccount:
     Type: OC::ORG::Account

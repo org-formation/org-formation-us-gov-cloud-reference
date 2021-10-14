@@ -55,7 +55,6 @@ Resources:
       FindingPublishingFrequency: FIFTEEN_MINUTES
 
   Master:
-    DependsOnAccount: !Ref SecurityAccount
     OrganizationBinding: !Ref MemberBinding
     Type: AWS::GuardDuty::Master
     Properties:

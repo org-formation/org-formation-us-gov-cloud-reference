@@ -21,12 +21,14 @@ GuardDuty:
     Account: !Ref accountId
   OrganizationBindings:
     LogArchiveBinding:
-      Account: !Ref SecurityAccount # change to --> LogArchiveAccount
+      # same account that manages guard duty for now, can make logs to to logging account in the future
+      Account: !Ref accountId 
     MemberBinding:
       Account: '*'
       IncludeMasterAccount: true
       ExcludeAccount:
         - !Ref accountId
+    # Binding for: Detector (needs to be MasterAccount + MemberAccounts)
     AllBinding:
       Account: '*'
       IncludeMasterAccount: true

@@ -11,11 +11,12 @@ GuardDuty:
 
 AwsConfigInventory:
   Type: include
-  Path: ./templates/080-aws-config-inventory/_tasks.yml
+  Path: ./govcloud-templates/080-aws-config-inventory/_tasks.yml
 
 AwsConfigRules:
   Type: include
-  Path: ./templates/090-aws-config-rules/_tasks.yml
+  DependsOn: [ AwsConfigInventory ]
+  Path: ./govcloud-templates/090-aws-config-rules/_tasks.yml
 
 AwsSso:
   Type: include

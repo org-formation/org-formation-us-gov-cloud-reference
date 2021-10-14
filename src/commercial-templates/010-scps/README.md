@@ -4,5 +4,5 @@ The templates in this folder are [Service Control Policies](https://docs.aws.ama
 Some notable SCPs in this folder:
 | Resource | Description
 | - | -
-| Deny Root Access | An explicit DENY on all actions performed by the root user
+| Deny Access | An explicit DENY on all actions performed by the commercial partition.
 | Self protect | This SCP ensures the integrity of the build system and basic organization setup.
